@@ -15,9 +15,9 @@ import os, tempfile, requests, csv, arcpy
 import pandas as pd
 
 ### Set Global Parameters
-arcpy.env.workspace = # r"Path\To\geodatabase.gdb"
-gdb = # r"Path\To\geodatabase.gdb"
-project_folder = #r"Path\To\Project"
+arcpy.env.workspace = # r"Path\To\Geodatabase.gdb"
+gdb = # r"Path\To\Geodatabase.gdb"
+project_folder = # r"Path\To\Project\Folder"
 aprx_global = # r"Path\To\Project.aprx"
 print(arcpy.env.workspace)
 data_url = 'https://usafactsstatic.blob.core.windows.net/public/data/covid-19/covid_confirmed_usafacts.csv'
@@ -101,7 +101,6 @@ def data_request(url):
 
 
 
-
 def add_data_to_map():
 
     print('Beginning to add state level data to geodatabase...')
@@ -152,7 +151,7 @@ def add_data_to_map():
 
     df_last_weeks.to_csv(os.path.join(arcpy.env.workspace, 'county_covid19_last_weeks.csv'), index=True, header=True)
 
-    arcpy.TableToTable_conversion( gdb + r"\county_covid19_last_weeks.csv", arcpy.env.workspace, "county_last_weeks")
+    arcpy.TableToTable_conversion(gdb + r"/county_covid19_last_weeks.csv", arcpy.env.workspace, "county_last_weeks")
 
     ###  Last day groupby state
     df_last_weeks_day = df_last_weeks[['countyFIPS', 'County Name', 'State', 'stateFIPS', 'total_weeks']]
@@ -183,6 +182,7 @@ def add_data_to_map():
     ### Add numeric field
     arcpy.AddField_management(out_feature, "current_cases_double", "DOUBLE", 9, "", "", "current_cases_double", "NULLABLE", "REQUIRED")
     arcpy.AddField_management(out_feature, "updated_cases_per_capita", "DOUBLE", 9, "", "", "updated_cases_per_capita", "NULLABLE", "REQUIRED")
+    arcpy.AddField_management(out_feature, "updated_cases_per_capita_text", "TEXT", 5, "", "", "updated_cases_per_capita_text", "NULLABLE", "REQUIRED")
 
     with arcpy.da.UpdateCursor(r'states_last_day', ['state_last_day_current_cases','current_cases_double']) as cursor:
         for x in cursor:
@@ -191,7 +191,15 @@ def add_data_to_map():
 
     with arcpy.da.UpdateCursor(r'states_last_day', ['current_cases_double','usa_states_POPULATION', 'updated_cases_per_capita']) as cursor:
         for x in cursor:
-            x[2] = x[0]/x[1]
+            x[2] = x[0]/x[1]*100
+            cursor.updateRow(x)
+
+    with arcpy.da.UpdateCursor(r'states_last_day', ['updated_cases_per_capita', 'updated_cases_per_capita_text']) as cursor:
+        for x in cursor:
+            x[1] = x[0]
+            x[1] = round(float(x[1]), 3)
+            x[1] = str(x[1])
+            x[1] = x[1].lstrip('0')
             cursor.updateRow(x)
 
     print('State data successfully added to geodatabase!')
@@ -251,6 +259,9 @@ def county_add():
 
     with arcpy.da.UpdateCursor(r'counties_last_weeks', ['current_cases_double','usa_counties_POPULATION', 'updated_cases_per_capita']) as cursor:
         for x in cursor:
+            if x[0] == None:
+                x[0] = 0
+            #print(x[0])
             x[2] = x[0]/x[1]
             cursor.updateRow(x)
 
@@ -435,10 +446,12 @@ def set_map_symbology():
 
     sym.updateRenderer('GraduatedColorsRenderer')
     sym.renderer.classificationField = 'updated_cases_per_capita'
-    sym.renderer.breakCount = 6
+    sym.renderer.breakCount = 10
     for brk in sym.renderer.classBreaks:
         color = brk.symbol.color
+        # brk.symbol.color = {'HSV': [cv, 100, 100, 100]}
         color['HSV'][-1] = 50
+        # color = {'HSV': [0, 100, 100, 100]}
         brk.symbol.color = color
 
     lyr.symbology = sym
