@@ -13,7 +13,13 @@ print(arcpy.env.workspace)
 data_url_atlantic = r'https://covidtracking.com/data/download/all-states-history.csv'
 data_url_nyt = r'https://github.com/nytimes/covid-19-data/raw/master/us-counties.csv'
 
-os.remove( gdb + r'\map_state_indicator_rolling_positive.lyrx')
+states_color = 'Cyan to Purple'
+
+try:
+    os.remove( gdb + r'\map_state_indicator_rolling_positive.lyrx')
+except:
+    pass
+
 if arcpy.Exists("indicator_rolling_positive"):
     arcpy.Delete_management("indicator_rolling_positive")
 if arcpy.Exists("rolling_positive"):
@@ -198,7 +204,7 @@ def set_map_symbology():
     sym = lyr.symbology
 
     sym.updateRenderer('GraduatedColorsRenderer')
-    colorRamp = aprx.listColorRamps("Purples (Continuous)")[0]
+    colorRamp = aprx.listColorRamps(states_color)[0]
     sym.renderer.colorRamp = colorRamp
     sym.renderer.classificationField = 'cases_per_capita'
     sym.renderer.breakCount = 10
@@ -212,3 +218,5 @@ df_death, df_hospitalized, df_positive, df_test = data_request_atlantic(data_url
 positive_test_csv()
 attribute_join()
 set_map_symbology()
+
+print('Done')
