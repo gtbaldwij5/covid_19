@@ -1,0 +1,31 @@
+#root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* padding-top: 100px; */
+}
+
+#root * {
+  font-family: 'Raleway', sans-serif !important;
+}
+
+body {
+  margin: 0;
+}
+
+::-webkit-scrollbar {width:8px;height:8px}
+::-webkit-scrollbar-corner,
+::-webkit-scrollbar-track{background:#e7e7e7}
+::-webkit-scrollbar-thumb{background:#ccc}
+
+body {
+  margin: 0;
+  scrollbar-face-color:#ccc;
+  scrollbar-base-color:#ccc;
+  scrollbar-3dlight-color:#ccc;
+  scrollbar-highlight-color:#ccc;
+  scrollbar-track-color:#e7e7e7;
+  scrollbar-arrow-color:#ccc;
+  scrollbar-shadow-color:#ccc;
+  scrollbar-darkshadow-color:#ccc
+}
