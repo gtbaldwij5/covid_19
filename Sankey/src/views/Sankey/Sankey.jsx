@@ -328,7 +328,7 @@ function SankeyWrap(props) {
       linkHoverOthersOpacity={0.1}
       enableLinkGradient={true}
       labelPosition="outside"
-      labelOrientation="vertical"
+      labelOrientation="horizontal"
       labelPadding={16}
       labelTextColor={{ from: 'color', modifiers: [ [ 'darker', 1 ] ] }}
       animate={true}
